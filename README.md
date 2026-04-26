@@ -22,7 +22,7 @@ Painel administrativo e dashboard do MVP. Interface construída com React e Next
 1. **Clone o repositório:**
    ```bash
    git clone git@github.com:Repositorio-de-projetos-da-faculdade/nexusDoc-Web.git
-   cd nome-repo-web
+   cd nexusDoc-Web
 
 2. **Instale as dependencias:**
    ```bash
