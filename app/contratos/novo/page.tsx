@@ -75,7 +75,7 @@ export default function NovoContratoPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-[var(--foreground)]">Categoria *</label>
-                <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
+                <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
                   <option value="" disabled>Selecione uma categoria...</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>

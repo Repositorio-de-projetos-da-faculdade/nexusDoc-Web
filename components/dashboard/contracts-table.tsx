@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { STATUS_CONFIG } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { formatDate, formatCurrency, cn } from "@/lib/utils";
 import { useData } from "@/contexts/data-context";
-import type { ContractStatus } from "@/types";
 
 const STATUSES: { value: string; label: string }[] = [
   { value: "all", label: "Todos status" },
@@ -17,6 +15,14 @@ const STATUSES: { value: string; label: string }[] = [
   { value: "draft", label: "Rascunho" },
 ];
 
+function SortIcon({ field, currentField, isAsc }: { field: string; currentField: string; isAsc: boolean }) {
+  return (
+    <span className={cn("ml-1 text-[10px]", currentField === field ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]")}>
+      {currentField === field ? (isAsc ? "↑" : "↓") : "↕"}
+    </span>
+  );
+}
+
 export function ContractsTable() {
   const { contracts, categories } = useData();
 
@@ -25,7 +31,7 @@ export function ContractsTable() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortField, setSortField] = useState<"id" | "title" | "value" | "endDate">("id");
-  const [sortAsc, setSortAsc] = useState(false); // ID desc by default
+  const [sortAsc, setSortAsc] = useState(false);
 
   const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -58,15 +64,8 @@ export function ContractsTable() {
     else { setSortField(field); setSortAsc(true); }
   }
 
-  const SortIcon = ({ field }: { field: typeof sortField }) => (
-    <span className={cn("ml-1 text-[10px]", sortField === field ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]")}>
-      {sortField === field ? (sortAsc ? "↑" : "↓") : "↕"}
-    </span>
-  );
-
   return (
     <div className="flex flex-col gap-4 h-full">
-      {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="w-24 shrink-0">
           <Input
@@ -99,7 +98,6 @@ export function ContractsTable() {
         </span>
       </div>
 
-      {/* Table */}
       <div className="border border-[var(--border)] rounded-[var(--radius)] overflow-hidden bg-[var(--card)] flex-1">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -109,13 +107,13 @@ export function ContractsTable() {
                   className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide cursor-pointer hover:text-[var(--foreground)] w-16"
                   onClick={() => toggleSort("id")}
                 >
-                  ID <SortIcon field="id" />
+                  ID <SortIcon field="id" currentField={sortField} isAsc={sortAsc} />
                 </th>
                 <th
                   className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide cursor-pointer hover:text-[var(--foreground)]"
                   onClick={() => toggleSort("title")}
                 >
-                  Título <SortIcon field="title" />
+                  Título <SortIcon field="title" currentField={sortField} isAsc={sortAsc} />
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden md:table-cell">Parte</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">Status</th>
@@ -123,13 +121,13 @@ export function ContractsTable() {
                   className="text-right px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide cursor-pointer hover:text-[var(--foreground)] hidden lg:table-cell"
                   onClick={() => toggleSort("value")}
                 >
-                  Valor <SortIcon field="value" />
+                  Valor <SortIcon field="value" currentField={sortField} isAsc={sortAsc} />
                 </th>
                 <th
                   className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide cursor-pointer hover:text-[var(--foreground)] hidden xl:table-cell"
                   onClick={() => toggleSort("endDate")}
                 >
-                  Vencimento <SortIcon field="endDate" />
+                  Vencimento <SortIcon field="endDate" currentField={sortField} isAsc={sortAsc} />
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden xl:table-cell">Categoria</th>
                 <th className="px-4 py-3" />

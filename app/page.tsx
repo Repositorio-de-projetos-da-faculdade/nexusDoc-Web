@@ -20,7 +20,6 @@ export default function DashboardPage() {
   const total = contracts.length;
   const active = contracts.filter((c) => c.status === "active").length;
   const pending = contracts.filter((c) => c.status === "pending").length;
-  const expiring = contracts.filter((c) => c.status === "expired").length;
   const totalValue = getTotalValue(contracts);
 
   return (
@@ -39,7 +38,6 @@ export default function DashboardPage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Metric cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard
             label="Total de Contratos"
@@ -72,7 +70,6 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Main content grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <RecentContracts />
@@ -83,7 +80,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick actions */}
         <div>
           <h2 className="text-sm font-semibold text-[var(--foreground)] mb-3">Ações Rápidas</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
