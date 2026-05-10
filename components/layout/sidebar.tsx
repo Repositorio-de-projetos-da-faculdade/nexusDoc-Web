@@ -4,22 +4,32 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAlerts } from "@/contexts/alerts-context";
+import Image from "next/image";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  Files, 
+  FolderOpen, 
+  Building2, 
+  Bell, 
+  BarChart 
+} from "lucide-react";
 
 type NavItem = {
   label: string;
   href: string;
-  icon: string;
+  icon: React.ReactNode;
   badge?: number | string;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/", icon: "⊞" },
-  { label: "Contratos", href: "/contratos", icon: "📄" },
-  { label: "Modelos", href: "/modelos", icon: "📑" },
-  { label: "Documentos", href: "/documentos", icon: "🗂" },
-  { label: "Partes", href: "/partes", icon: "🏢" },
-  { label: "Alertas", href: "/alertas", icon: "🔔" },
-  { label: "Relatórios", href: "/relatorios", icon: "📊" },
+  { label: "Dashboard", href: "/", icon: <LayoutDashboard size={18} /> },
+  { label: "Contratos", href: "/contratos", icon: <FileText size={18} /> },
+  { label: "Modelos", href: "/modelos", icon: <Files size={18} /> },
+  { label: "Documentos", href: "/documentos", icon: <FolderOpen size={18} /> },
+  { label: "Partes", href: "/partes", icon: <Building2 size={18} /> },
+  { label: "Alertas", href: "/alertas", icon: <Bell size={18} /> },
+  { label: "Relatórios", href: "/relatorios", icon: <BarChart size={18} /> },
 ];
 
 export function Sidebar() {
@@ -28,17 +38,9 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full flex-col bg-[var(--sidebar-bg)] border-r border-[var(--sidebar-border)] w-[220px] shrink-0">
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-[var(--sidebar-border)]">
-        <div className="h-8 w-8 rounded-lg bg-[var(--primary)] flex items-center justify-center">
-          <span className="text-white font-bold text-sm">N</span>
-        </div>
-        <div>
-          <span className="font-bold text-sm text-[var(--foreground)]">
-            NexusDoc
-          </span>
-          <p className="text-[10px] text-[var(--muted-foreground)] leading-none">
-            Gestão de Contratos
-          </p>
+      <div className="flex items-center gap-2.5 px-4 py-6 border-b border-[var(--sidebar-border)]">
+        <div className="h-10 w-full relative">
+          <Image src="/logo-horizontal.png" alt="Gracon" fill className="object-contain object-left" />
         </div>
       </div>
 

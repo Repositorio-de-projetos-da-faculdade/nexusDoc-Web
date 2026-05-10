@@ -4,34 +4,28 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* === NexusDoc Design Tokens — Light Mode (Radix) === */
+  /* === Gracon Design Tokens — Light Mode === */
   
-  /* Radix Custom Palette */
-  --radix-accent: #34D5BA;
-  --radix-gray: #6A5B5E;
-  --radix-bg: #E8EDE9;
-
-  /* Semantic tokens */
-  --background: var(--radix-bg);
-  --foreground: #111111;
+  --background: #e8ede9;
+  --foreground: #111827;
   
   --card: #ffffff;
-  --card-foreground: #111111;
+  --card-foreground: #111827;
   
   --popover: #ffffff;
-  --popover-foreground: #111111;
+  --popover-foreground: #111827;
   
-  --primary: var(--radix-accent);
+  --primary: #34d5ba;
   --primary-foreground: #ffffff;
   
-  --secondary: #d1d8d4;
-  --secondary-foreground: #111111;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #1f2937;
   
-  --muted: #dcdfdc;
-  --muted-foreground: var(--radix-gray);
+  --muted: #f4f5f4;
+  --muted-foreground: #5a5b5e;
   
-  --accent: #d1edd5;
-  --accent-foreground: #111111;
+  --accent: #e5f9f5;
+  --accent-foreground: #22c55e;
   
   --success: #10b981;
   --success-foreground: #ffffff;
@@ -42,60 +36,61 @@
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   
-  --border: #d1d8d4;
-  --input: #d1d8d4;
-  --ring: var(--radix-accent);
+  --border: #d1d5db;
+  --input: #d1d5db;
+  --ring: #34d5ba;
   
   --sidebar-bg: #ffffff;
-  --sidebar-border: #d1d8d4;
+  --sidebar-border: #d1d5db;
   
-  --radius: 0.75rem;
+  --radius: 0.5rem;
 }
 
 .dark {
-  /* === NexusDoc Design Tokens — Dark Mode (Radix) === */
+  /* === Gracon Design Tokens — Dark Mode (B2B SaaS) === */
   
-  /* Radix Custom Palette */
-  --radix-accent: #90BE6D;
-  --radix-gray: #16A78A;
-  --radix-bg: #111111;
-
-  --background: var(--radix-bg);
-  --foreground: #E8EDE9;
+  --background: #021209;
+  --foreground: #f3f4f6;
   
-  --card: #181818;
-  --card-foreground: #E8EDE9;
+  --card: #041a10;
+  --card-foreground: #f3f4f6;
   
-  --popover: #181818;
-  --popover-foreground: #E8EDE9;
+  --popover: #041a10;
+  --popover-foreground: #f3f4f6;
   
-  --primary: var(--radix-accent);
-  --primary-foreground: #111111;
+  --primary: #ccff00;
+  --primary-foreground: #021209;
   
-  --secondary: #222222;
-  --secondary-foreground: #E8EDE9;
+  --secondary: #0a2e1d;
+  --secondary-foreground: #f3f4f6;
   
-  --muted: #222222;
-  --muted-foreground: var(--radix-gray);
+  --muted: #0a2e1d;
+  --muted-foreground: #9ca3af;
   
-  --accent: #1e2920;
-  --accent-foreground: var(--radix-accent);
+  --accent: #0f4a2f;
+  --accent-foreground: #ccff00;
   
   --success: #10b981;
-  --success-foreground: #111111;
+  --success-foreground: #021209;
   
-  --warning: #fbbf24;
-  --warning-foreground: #111111;
+  --warning: #f59e0b;
+  --warning-foreground: #021209;
   
-  --destructive: #f87171;
-  --destructive-foreground: #111111;
+  --destructive: #ef4444;
+  --destructive-foreground: #f3f4f6;
   
-  --border: #333333;
-  --input: #333333;
-  --ring: var(--radix-accent);
+  --border: #0f4a2f;
+  --input: #0f4a2f;
+  --ring: #ccff00;
   
-  --sidebar-bg: #181818;
-  --sidebar-border: #222222;
+  --sidebar-bg: #03170c;
+  --sidebar-border: #0f4a2f;
+}
+
+/* Base utilities */
+.glass {
+  background: var(--card);
+  border: 1px solid var(--border);
 }
 
 * {

@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppShell } from "@/components/layout/app-shell";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "NexusDoc — Gestão de Contratos",
+  title: "Gracon — Gestão de Contratos",
   description: "Plataforma de gestão inteligente de contratos e documentos corporativos.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -16,14 +19,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <Providers>
           <AppShell>{children}</AppShell>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

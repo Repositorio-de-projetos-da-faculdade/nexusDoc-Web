@@ -1,5 +1,5 @@
 
-## 💻 [NexusDoc] — Aplicação Web (Frontend)
+## 💻 [Gracon] — Aplicação Web (Frontend)
 
 Painel administrativo e dashboard do MVP. Interface construída com React e Next.js para consumo dos dados extraídos pela nossa API de contratos.
 
@@ -21,8 +21,8 @@ Painel administrativo e dashboard do MVP. Interface construída com React e Next
 
 1. **Clone o repositório:**
    ```bash
-   git clone git@github.com:Repositorio-de-projetos-da-faculdade/nexusDoc-Web.git
-   cd nexusDoc-Web
+   git clone git@github.com:Repositorio-de-projetos-da-faculdade/gracon-Web.git
+   cd gracon-Web
 
 2. **Instale as dependencias:**
    ```bash

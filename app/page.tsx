@@ -5,14 +5,43 @@ import { MetricCard } from "@/components/dashboard/metric-card";
 import { RecentContracts } from "@/components/dashboard/recent-contracts";
 import { AlertsPanel } from "@/components/dashboard/alerts-panel";
 import { StatusChart } from "@/components/dashboard/status-chart";
+import { UploadContractModal } from "@/components/dashboard/upload-contract-modal";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { useData } from "@/contexts/data-context";
 import type { Contract } from "@/types";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { 
+  FileText, 
+  CheckCircle, 
+  Clock, 
+  DollarSign, 
+  PlusSquare, 
+  Upload, 
+  BarChart, 
+  Bell,
+  Plus
+} from "lucide-react";
 
 function getTotalValue(contracts: Contract[]) {
   return contracts.reduce((sum, c) => sum + c.value, 0);
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
+};
 
 export default function DashboardPage() {
   const { contracts } = useData();
@@ -22,90 +51,127 @@ export default function DashboardPage() {
   const pending = contracts.filter((c) => c.status === "pending").length;
   const totalValue = getTotalValue(contracts);
 
+  const handleQuickAction = (label: string) => {
+    toast.info(`Ação iniciada: ${label}`, {
+      description: "Esta funcionalidade será implementada em breve.",
+    });
+  };
+
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden bg-[var(--background)]">
       <Topbar
         title="Dashboard"
         subtitle="Visão geral dos contratos ativos"
         action={
-          <Button size="sm">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="mr-2">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Novo Contrato
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <UploadContractModal />
+          </motion.div>
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard
-            label="Total de Contratos"
-            value={String(total)}
-            delta="+2 este mês"
-            deltaType="positive"
-            icon="📄"
-            accent
-          />
-          <MetricCard
-            label="Contratos Ativos"
-            value={String(active)}
-            delta={`${total > 0 ? Math.round((active / total) * 100) : 0}% do total`}
-            deltaType="positive"
-            icon="✅"
-          />
-          <MetricCard
-            label="Pendentes"
-            value={String(pending)}
-            delta="Aguardando ação"
-            deltaType="neutral"
-            icon="⏳"
-          />
-          <MetricCard
-            label="Valor Total"
-            value={formatCurrency(totalValue)}
-            delta="+12% vs. trimestre anterior"
-            deltaType="positive"
-            icon="💰"
-          />
-        </div>
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        <motion.div 
+          className="grid grid-cols-2 lg:grid-cols-4 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div variants={itemVariants}>
+            <MetricCard
+              label="Total de Contratos"
+              value={String(total)}
+              delta="+2 este mês"
+              deltaType="positive"
+              icon={<FileText size={20} />}
+              accent
+            />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <MetricCard
+              label="Contratos Ativos"
+              value={String(active)}
+              delta={`${total > 0 ? Math.round((active / total) * 100) : 0}% do total`}
+              deltaType="positive"
+              icon={<CheckCircle size={20} />}
+            />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <MetricCard
+              label="Pendentes"
+              value={String(pending)}
+              delta="Aguardando ação"
+              deltaType="neutral"
+              icon={<Clock size={20} />}
+            />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <MetricCard
+              label="Valor Total"
+              value={formatCurrency(totalValue)}
+              delta="+12% vs. ant."
+              deltaType="positive"
+              icon={<DollarSign size={20} />}
+            />
+          </motion.div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
-            <RecentContracts />
-          </div>
-          <div className="space-y-4">
-            <AlertsPanel />
-            <StatusChart />
-          </div>
-        </div>
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div className="lg:col-span-2" variants={itemVariants}>
+            <div className="glass rounded-[var(--radius)] shadow-xl shadow-black/5 overflow-hidden border border-[var(--border)]">
+              <RecentContracts />
+            </div>
+          </motion.div>
+          <motion.div className="space-y-6" variants={itemVariants}>
+            <div className="glass rounded-[var(--radius)] shadow-xl shadow-black/5 overflow-hidden border border-[var(--border)]">
+              <AlertsPanel />
+            </div>
+            <div className="glass rounded-[var(--radius)] shadow-xl shadow-black/5 overflow-hidden border border-[var(--border)] p-4">
+              <StatusChart />
+            </div>
+          </motion.div>
+        </motion.div>
 
-        <div>
-          <h2 className="text-sm font-semibold text-[var(--foreground)] mb-3">Ações Rápidas</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <h2 className="text-sm font-semibold text-[var(--foreground)] mb-4 uppercase tracking-wider">Ações Rápidas</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { label: "Novo Contrato", icon: "📝", desc: "Criar contrato" },
-              { label: "Upload Documento", icon: "📤", desc: "Anexar arquivo" },
-              { label: "Gerar Relatório", icon: "📊", desc: "Exportar dados" },
-              { label: "Configurar Alerta", icon: "🔔", desc: "Vencimentos" },
-            ].map((action) => (
-              <button
+              { label: "Novo Contrato", icon: <PlusSquare size={24} />, desc: "Criar contrato" },
+              { label: "Upload Documento", icon: <Upload size={24} />, desc: "Anexar arquivo" },
+              { label: "Gerar Relatório", icon: <BarChart size={24} />, desc: "Exportar dados" },
+              { label: "Configurar Alerta", icon: <Bell size={24} />, desc: "Vencimentos" },
+            ].map((action, i) => (
+              <motion.button
                 key={action.label}
-                className="flex flex-col items-start gap-2 p-4 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] hover:border-[var(--primary)] hover:bg-[var(--accent)] transition-all duration-200 cursor-pointer text-left group"
+                onClick={() => handleQuickAction(action.label)}
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 + i * 0.1 }}
+                className="flex flex-col items-start gap-3 p-5 rounded-2xl border border-[var(--border)] glass hover:border-[var(--primary)]/50 hover:bg-gradient-to-br hover:from-[var(--card)] hover:to-[var(--accent)] transition-all duration-300 cursor-pointer text-left group shadow-sm hover:shadow-md"
               >
-                <span className="text-xl">{action.icon}</span>
+                <span className="text-2xl p-2 rounded-xl bg-[var(--accent)] text-[var(--primary)] group-hover:scale-110 transition-transform">{action.icon}</span>
                 <div>
-                  <p className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                  <p className="text-sm font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
                     {action.label}
                   </p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
+                  <p className="text-xs text-[var(--muted-foreground)] mt-1">
                     {action.desc}
                   </p>
                 </div>
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

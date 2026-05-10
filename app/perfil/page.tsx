@@ -14,7 +14,7 @@ export default function PerfilPage() {
   const [profile, setProfile] = useState({
     name: "Lucas Ferreira",
     role: "Administrador do Sistema",
-    email: "lucas.ferreira@nexusdoc.com.br"
+    email: "lucas.ferreira@gracon.com.br"
   });
 
   const [editForm, setEditForm] = useState({ ...profile });

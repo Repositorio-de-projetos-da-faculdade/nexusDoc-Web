@@ -5,11 +5,34 @@ import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { useData } from "@/contexts/data-context";
+import { useContracts } from "@/hooks/use-contracts";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton"; // Se não houver, vou simular ou usar um placeholder
 
 export function RecentContracts() {
-  const { contracts, categories } = useData();
+  const { contracts, isLoading } = useContracts();
+  const { categories } = useData();
   const recent = contracts.slice(0, 5);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="h-8 w-8 rounded bg-[var(--muted)] animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-1/3 bg-[var(--muted)] animate-pulse rounded" />
+                  <div className="h-3 w-1/4 bg-[var(--muted)] animate-pulse rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
