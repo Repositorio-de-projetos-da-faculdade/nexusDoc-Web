@@ -1,65 +1,178 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Topbar } from "@/components/layout/topbar";
+import { MetricCard } from "@/components/dashboard/metric-card";
+import { RecentContracts } from "@/components/dashboard/recent-contracts";
+import { AlertsPanel } from "@/components/dashboard/alerts-panel";
+import { StatusChart } from "@/components/dashboard/status-chart";
+import { UploadContractModal } from "@/components/dashboard/upload-contract-modal";
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
+import { useData } from "@/contexts/data-context";
+import type { Contract } from "@/types";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { 
+  FileText, 
+  CheckCircle, 
+  Clock, 
+  DollarSign, 
+  PlusSquare, 
+  Upload, 
+  BarChart, 
+  Bell,
+  Plus
+} from "lucide-react";
+
+function getTotalValue(contracts: Contract[]) {
+  return contracts.reduce((sum, c) => sum + c.value, 0);
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
+};
+
+export default function DashboardPage() {
+  const { contracts } = useData();
+  
+  const total = contracts.length;
+  const active = contracts.filter((c) => c.status === "active").length;
+  const pending = contracts.filter((c) => c.status === "pending").length;
+  const totalValue = getTotalValue(contracts);
+
+  const handleQuickAction = (label: string) => {
+    toast.info(`Ação iniciada: ${label}`, {
+      description: "Esta funcionalidade será implementada em breve.",
+    });
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="flex flex-col h-full overflow-hidden bg-[var(--background)]">
+      <Topbar
+        title="Dashboard"
+        subtitle="Visão geral dos contratos ativos"
+        action={
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <UploadContractModal />
+          </motion.div>
+        }
+      />
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        <motion.div 
+          className="grid grid-cols-2 lg:grid-cols-4 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div variants={itemVariants}>
+            <MetricCard
+              label="Total de Contratos"
+              value={String(total)}
+              delta="+2 este mês"
+              deltaType="positive"
+              icon={<FileText size={20} />}
+              accent
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <MetricCard
+              label="Contratos Ativos"
+              value={String(active)}
+              delta={`${total > 0 ? Math.round((active / total) * 100) : 0}% do total`}
+              deltaType="positive"
+              icon={<CheckCircle size={20} />}
+            />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <MetricCard
+              label="Pendentes"
+              value={String(pending)}
+              delta="Aguardando ação"
+              deltaType="neutral"
+              icon={<Clock size={20} />}
+            />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <MetricCard
+              label="Valor Total"
+              value={formatCurrency(totalValue)}
+              delta="+12% vs. ant."
+              deltaType="positive"
+              icon={<DollarSign size={20} />}
+            />
+          </motion.div>
+        </motion.div>
+
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div className="lg:col-span-2" variants={itemVariants}>
+            <div className="glass rounded-[var(--radius)] shadow-xl shadow-black/5 overflow-hidden border border-[var(--border)]">
+              <RecentContracts />
+            </div>
+          </motion.div>
+          <motion.div className="space-y-6" variants={itemVariants}>
+            <div className="glass rounded-[var(--radius)] shadow-xl shadow-black/5 overflow-hidden border border-[var(--border)]">
+              <AlertsPanel />
+            </div>
+            <div className="glass rounded-[var(--radius)] shadow-xl shadow-black/5 overflow-hidden border border-[var(--border)] p-4">
+              <StatusChart />
+            </div>
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <h2 className="text-sm font-semibold text-[var(--foreground)] mb-4 uppercase tracking-wider">Ações Rápidas</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { label: "Novo Contrato", icon: <PlusSquare size={24} />, desc: "Criar contrato" },
+              { label: "Upload Documento", icon: <Upload size={24} />, desc: "Anexar arquivo" },
+              { label: "Gerar Relatório", icon: <BarChart size={24} />, desc: "Exportar dados" },
+              { label: "Configurar Alerta", icon: <Bell size={24} />, desc: "Vencimentos" },
+            ].map((action, i) => (
+              <motion.button
+                key={action.label}
+                onClick={() => handleQuickAction(action.label)}
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 + i * 0.1 }}
+                className="flex flex-col items-start gap-3 p-5 rounded-2xl border border-[var(--border)] glass hover:border-[var(--primary)]/50 hover:bg-gradient-to-br hover:from-[var(--card)] hover:to-[var(--accent)] transition-all duration-300 cursor-pointer text-left group shadow-sm hover:shadow-md"
+              >
+                <span className="text-2xl p-2 rounded-xl bg-[var(--accent)] text-[var(--primary)] group-hover:scale-110 transition-transform">{action.icon}</span>
+                <div>
+                  <p className="text-sm font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                    {action.label}
+                  </p>
+                  <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                    {action.desc}
+                  </p>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

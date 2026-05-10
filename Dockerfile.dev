@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Instala dependências necessárias para algumas libs node
+RUN apk add --no-cache libc6-compat
+
+# Copia os arquivos de dependência
+COPY package.json package-lock.json* ./
+
+# Instala todas as dependências
+RUN npm ci
+
+# Copia o resto do código
+COPY . .
+
+# Expõe a porta de desenvolvimento
+EXPOSE 3000
+
+# O comando de start (usaremos o dev do next)
+CMD ["npm", "run", "dev"]
