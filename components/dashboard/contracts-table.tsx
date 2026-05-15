@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { formatDate, formatCurrency, cn } from "@/lib/utils";
 import { useData } from "@/contexts/data-context";
+import { Eye } from "lucide-react";
 
 const STATUSES: { value: string; label: string }[] = [
   { value: "all", label: "Todos status" },
@@ -25,6 +27,7 @@ function SortIcon({ field, currentField, isAsc }: { field: string; currentField:
 
 export function ContractsTable() {
   const { contracts, categories } = useData();
+  const router = useRouter();
 
   const [searchId, setSearchId] = useState("");
   const [searchTitle, setSearchTitle] = useState("");
@@ -144,8 +147,9 @@ export function ContractsTable() {
                 filtered.map((contract, idx) => (
                   <tr
                     key={contract.id}
+                    onClick={() => router.push(`/contratos/${contract.id}`)}
                     className={cn(
-                      "border-b border-[var(--border)] last:border-0 hover:bg-[var(--muted)]/50 transition-colors duration-100 cursor-pointer",
+                      "border-b border-[var(--border)] last:border-0 hover:bg-[var(--accent)]/40 transition-colors duration-150 cursor-pointer group",
                       idx % 2 === 0 ? "" : "bg-[var(--muted)]/20"
                     )}
                   >
@@ -173,8 +177,9 @@ export function ContractsTable() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100">
-                        ···
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        <Eye size={14} className="mr-1" />
+                        Ver
                       </Button>
                     </td>
                   </tr>
