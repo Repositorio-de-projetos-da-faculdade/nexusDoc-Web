@@ -29,25 +29,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning className={`${oxanium.variable} ${inter.variable}`}>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme') || 'system';
-                  var resolved = theme;
-                  if (theme === 'system') {
-                    resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                  }
-                  document.documentElement.classList.add(resolved);
-                  document.documentElement.style.colorScheme = resolved;
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
       <body suppressHydrationWarning className="font-sans">
         <Providers>
           <AppShell>{children}</AppShell>

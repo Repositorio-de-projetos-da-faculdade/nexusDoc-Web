@@ -7,7 +7,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/contexts/sidebar-context";
 import { AlertsProvider } from "@/contexts/alerts-context";
-import { DataProvider } from "@/contexts/data-context";
+
+import { AuthProvider } from "@/contexts/auth-context";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -27,14 +28,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <SidebarProvider>
-          <AlertsProvider>
-            <DataProvider>
+        <AuthProvider>
+          <SidebarProvider>
+            <AlertsProvider>
               {children}
               <Toaster position="top-right" richColors closeButton />
-            </DataProvider>
-          </AlertsProvider>
-        </SidebarProvider>
+            </AlertsProvider>
+          </SidebarProvider>
+        </AuthProvider>
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

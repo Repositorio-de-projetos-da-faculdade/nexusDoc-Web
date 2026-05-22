@@ -2,11 +2,11 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { STATUS_CONFIG } from "@/lib/mock-data";
-import { useData } from "@/contexts/data-context";
+import { useContracts } from "@/hooks/use-contracts";
 import type { ContractStatus } from "@/types";
 
 export function StatusChart() {
-  const { contracts } = useData();
+  const { contracts } = useContracts();
   const total = contracts.length;
   
   const counts = contracts.reduce<Record<string, number>>((acc, c) => {

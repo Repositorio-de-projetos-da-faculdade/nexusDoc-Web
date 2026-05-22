@@ -2,10 +2,10 @@
 
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
-import { useData } from "@/contexts/data-context";
+import { useTemplates } from "@/hooks/use-templates";
 
 export default function ModelosPage() {
-  const { templates } = useData();
+  const { templates } = useTemplates();
 
   return (
     <div className="flex flex-col h-full bg-[var(--background)]">

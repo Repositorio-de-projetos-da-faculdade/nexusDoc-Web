@@ -14,13 +14,15 @@ const STORAGE_KEY = "sidebar-collapsed";
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsedState] = useState(true);
-  const [hydrated, setHydrated] = useState(false);
+  const [, setHydrated] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === "false") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCollapsedState(false);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCollapsedState(true);
     }
     setHydrated(true);

@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
 
 interface TopbarProps {
   title: string;
@@ -11,6 +12,7 @@ interface TopbarProps {
 
 export function Topbar({ title, subtitle, action }: TopbarProps) {
   const { theme, setTheme } = useTheme();
+  const { user, activeWorkspaceId, switchWorkspace } = useAuth();
 
   return (
     <header className="flex items-center gap-4 px-6 py-4 border-b border-[var(--border)] bg-[var(--card)] shrink-0">
@@ -28,6 +30,21 @@ export function Topbar({ title, subtitle, action }: TopbarProps) {
 
 
       <div className="flex items-center gap-3">
+        {user && user.workspaces && user.workspaces.length > 0 && (
+          <div className="hidden md:flex items-center">
+            <select
+              className="text-xs font-medium bg-[var(--accent)]/50 hover:bg-[var(--accent)] text-[var(--foreground)] rounded-lg border border-[var(--border)] px-3 py-1.5 focus:ring-1 focus:ring-[var(--primary)] cursor-pointer outline-none transition-colors"
+              value={activeWorkspaceId || ""}
+              onChange={(e) => switchWorkspace(e.target.value)}
+            >
+              {user.workspaces.map((w) => (
+                <option key={w.id} value={w.id}>{w.name} ({w.role})</option>
+              ))}
+            </select>
+            <div className="w-px h-6 bg-[var(--border)] mx-3"></div>
+          </div>
+        )}
+        
         {action}
         
         <Button 

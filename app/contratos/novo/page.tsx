@@ -5,12 +5,16 @@ import { useRouter } from "next/navigation";
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
-import { useData } from "@/contexts/data-context";
+import { useCategories } from "@/hooks/use-categories";
+import { useTemplates } from "@/hooks/use-templates";
+import { useContracts } from "@/hooks/use-contracts";
 import type { ContractStatus } from "@/types";
 
 export default function NovoContratoPage() {
   const router = useRouter();
-  const { categories, templates, addContract } = useData();
+  const { categories } = useCategories();
+  const { templates } = useTemplates();
+  const { addContract } = useContracts();
 
   const [title, setTitle] = useState("");
   const [counterparty, setCounterparty] = useState("");
@@ -24,7 +28,7 @@ export default function NovoContratoPage() {
     e.preventDefault();
     if (!title || !counterparty || !categoryId || !startDate || !endDate) return;
 
-    addContract({
+    addContract.mutate({
       title,
       counterparty,
       categoryId,
@@ -35,9 +39,11 @@ export default function NovoContratoPage() {
       status: "draft" as ContractStatus,
       owner: "Usuário Logado",
       tags: [],
+    }, {
+      onSuccess: () => {
+        router.push("/contratos");
+      },
     });
-
-    router.push("/contratos");
   };
 
   return (

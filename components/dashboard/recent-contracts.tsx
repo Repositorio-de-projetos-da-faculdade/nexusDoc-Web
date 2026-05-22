@@ -4,14 +4,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { useData } from "@/contexts/data-context";
+import { useCategories } from "@/hooks/use-categories";
 import { useContracts } from "@/hooks/use-contracts";
 import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton"; // Se não houver, vou simular ou usar um placeholder
+
 
 export function RecentContracts() {
   const { contracts, isLoading } = useContracts();
-  const { categories } = useData();
+  const { categories } = useCategories();
   const recent = contracts.slice(0, 5);
 
   if (isLoading) {

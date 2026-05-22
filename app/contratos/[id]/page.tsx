@@ -1,13 +1,16 @@
 "use client";
 
-import { use } from "react";
+import { use, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useData } from "@/contexts/data-context";
+import { useCategories } from "@/hooks/use-categories";
+import { useAuth } from "@/contexts/auth-context";
+import { contractsService } from "@/lib/services/contracts.service";
+import { ContractDetail } from "@/types/api";
+import { toast } from "sonner";
 import { Topbar } from "@/components/layout/topbar";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
-import { MOCK_CONTRACT_ANALYSES } from "@/lib/contract-analysis-data";
 import {
   RiskGauge,
   ValidityProgress,
@@ -17,8 +20,6 @@ import {
   ContractInfoGrid,
 } from "@/components/dashboard/contract-analysis";
 import {
-  BillingChart,
-  ExpenseBarChart,
   ClausePieChart,
 } from "@/components/dashboard/contract-charts";
 import {
@@ -29,6 +30,9 @@ import {
   Clock,
   AlertTriangle,
   FileText,
+  CheckCircle2,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 
 export default function ContratoDetailPage({
@@ -37,10 +41,150 @@ export default function ContratoDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { contracts, categories } = useData();
+  const { categories } = useCategories();
+  const { user } = useAuth();
+  
+  const [contractDetail, setContractDetail] = useState<ContractDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
 
-  const contract = contracts.find((c) => c.id === id);
-  const analysis = MOCK_CONTRACT_ANALYSES[id];
+  useEffect(() => {
+    async function loadContract() {
+      try {
+        setIsLoading(true);
+        const res = await contractsService.getContractById(id);
+        if (res.ok) {
+          setContractDetail(res.data);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar contrato:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadContract();
+  }, [id]);
+
+  const contract = useMemo(() => {
+    if (!contractDetail) return null;
+    
+    const counterpartyObj = contractDetail.extraction.parties?.find(p => p.type === 'CONTRACTOR' || p.type === 'HIRED');
+    const counterparty = counterpartyObj ? counterpartyObj.name : "Não identificada";
+
+    return {
+      id: contractDetail.contract.id,
+      categoryId: "1", // Mapear adequadamente se vier do backend
+      title: contractDetail.contract.title,
+      status: contractDetail.contract.status as any,
+      counterparty,
+      value: contractDetail.extraction.summary?.valor?.total ? parseFloat(contractDetail.extraction.summary.valor.total) : 0,
+      startDate: contractDetail.extraction.dates?.start_date ? new Date(contractDetail.extraction.dates.start_date).toISOString() : new Date().toISOString(),
+      endDate: contractDetail.extraction.dates?.end_date ? new Date(contractDetail.extraction.dates.end_date).toISOString() : new Date(Date.now() + 31536000000).toISOString(),
+      fileUrl: contractDetail.contract.file_url,
+      owner: "Gestão de Contratos",
+      tags: ["Importante", "Análise Realizada"],
+      lastUpdated: new Date(contractDetail.contract.updated_at || contractDetail.contract.created_at || Date.now()).toISOString(),
+    };
+  }, [contractDetail]);
+
+  const analysis = useMemo(() => {
+    if (!contractDetail) return null;
+    
+    const json = contractDetail.extraction.summary || {};
+    
+    // Calcula vigência básica
+    const start = contractDetail.extraction.dates?.start_date ? new Date(contractDetail.extraction.dates.start_date).getTime() : Date.now();
+    const end = contractDetail.extraction.dates?.end_date ? new Date(contractDetail.extraction.dates.end_date).getTime() : Date.now() + 31536000000;
+    const totalDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+    const elapsedDays = Math.max(0, Math.ceil((Date.now() - start) / (1000 * 60 * 60 * 24)));
+    const daysRemaining = Math.max(0, totalDays - elapsedDays);
+    const percentElapsed = Math.min(100, Math.round((elapsedDays / totalDays) * 100));
+    
+    const validityStatus = percentElapsed >= 100 ? "expirado" : (daysRemaining < 30 ? "próximo_vencimento" : "vigente");
+
+    // Formata cláusulas suspensas a partir dos alertas JSON
+    const suspClauses: any[] = [];
+    if (json.alertas && Array.isArray(json.alertas)) {
+      json.alertas.forEach((alerta: string, idx: number) => {
+        suspClauses.push({
+          id: `alerta-${idx}`,
+          clause: "Ponto de Atenção",
+          excerpt: alerta,
+          severity: "alta",
+          recommendation: "Revisão sugerida com base na extração",
+        });
+      });
+    }
+
+    // Calcula risco base nos alertas e multas
+    const baseRisk = (json.alertas?.length || 0) * 15;
+    const riskScore = Math.min(100, baseRisk + (json.penalidades?.multaRescisao ? 10 : 0) || 30);
+
+    // Clause Breakdown for Pie Chart
+    const breakdownMap: Record<string, number> = {};
+    contractDetail.extraction.clauses?.forEach(c => {
+      const t = c.type === 'PENALTY' ? 'Penalidades' : c.type === 'OBLIGATION' ? 'Obrigações' : c.type === 'TERMINATION' ? 'Rescisão' : 'Gerais';
+      breakdownMap[t] = (breakdownMap[t] || 0) + 1;
+    });
+    const clauseBreakdown = Object.entries(breakdownMap).map(([type, count]) => ({
+      type, count, color: type === 'Penalidades' ? '#f59e0b' : type === 'Rescisão' ? '#ef4444' : '#3b82f6'
+    }));
+
+    return {
+      contractId: contractDetail.contract.id,
+      riskScore,
+      validityStatus,
+      daysRemaining,
+      totalDays,
+      percentElapsed,
+      aiSummary: json.objeto || json.titulo || "O contrato foi processado e as informações básicas foram extraídas.",
+      suspiciousClauses: suspClauses,
+      clauseBreakdown,
+      recommendations: json.clausulasRelevantes || [],
+      keyMetrics: {
+        totalValue: json.valor?.total ? parseFloat(json.valor.total) : 0,
+        currency: json.valor?.moeda || "BRL",
+        paymentMethod: json.valor?.formaPagamento || "Não especificado",
+        readjustment: json.valor?.reajuste || "Não definido",
+        penalties: json.penalidades?.multaInadimplemento || json.penalidades?.multaRescisao || "Nenhuma especificada",
+      },
+    };
+  }, [contractDetail, id]);
+
+  const handleDecision = async (decision: 'APPROVED' | 'REJECTED') => {
+    if (!user) {
+      toast.error("Usuário não autenticado");
+      return;
+    }
+    
+    if (decision === 'APPROVED') setIsApproving(true);
+    else setIsRejecting(true);
+
+    try {
+      await contractsService.approveContract(id, {
+        user_id: (user as any).id || user.email, 
+        decision,
+      });
+      toast.success(decision === 'APPROVED' ? "Contrato aprovado com sucesso!" : "Contrato rejeitado!");
+    } catch (err: any) {
+      toast.error("Falha ao registrar decisão", { description: err.message });
+    } finally {
+      setIsApproving(false);
+      setIsRejecting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full overflow-hidden">
+        <Topbar title="Carregando..." />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="animate-spin text-[var(--muted-foreground)]" size={32} />
+        </div>
+      </div>
+    );
+  }
 
   if (!contract) {
     return (
@@ -76,6 +220,26 @@ export default function ContratoDetailPage({
         subtitle={`Relatório de análise do contrato #${contract.id}`}
         action={
           <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/50"
+              disabled={isApproving || isRejecting}
+              onClick={() => handleDecision('REJECTED')}
+            >
+              {isRejecting ? <Loader2 size={14} className="mr-2 animate-spin"/> : <XCircle size={14} className="mr-2" />}
+              Rejeitar
+            </Button>
+            <Button 
+              size="sm" 
+              className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+              disabled={isApproving || isRejecting}
+              onClick={() => handleDecision('APPROVED')}
+            >
+              {isApproving ? <Loader2 size={14} className="mr-2 animate-spin"/> : <CheckCircle2 size={14} className="mr-2" />}
+              Aprovar
+            </Button>
+            <div className="w-px h-6 bg-[var(--border)] mx-1"></div>
             <Link href="/contratos">
               <Button variant="outline" size="sm">
                 <ArrowLeft size={14} className="mr-2" />
@@ -106,34 +270,28 @@ export default function ContratoDetailPage({
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <AnalysisMetricCard
                     label="Valor Total"
-                    value={formatCurrency(contract.value)}
+                    value={analysis.keyMetrics.totalValue ? formatCurrency(analysis.keyMetrics.totalValue) : "Não especificado"}
                     icon={<DollarSign size={18} />}
                     color="#34d5ba"
                   />
                   <AnalysisMetricCard
-                    label="Pago até hoje"
-                    value={formatCurrency(analysis.keyMetrics.totalPaid)}
+                    label="Forma Pagto"
+                    value={analysis.keyMetrics.paymentMethod}
                     icon={<TrendingUp size={18} />}
                     color="#8b5cf6"
-                    subtitle={`Média: ${formatCurrency(analysis.keyMetrics.avgMonthly)}/mês`}
+                    subtitle={`Moeda: ${analysis.keyMetrics.currency}`}
                   />
                   <AnalysisMetricCard
-                    label="Saldo Restante"
-                    value={formatCurrency(analysis.keyMetrics.totalRemaining)}
-                    icon={<Clock size={18} />}
+                    label="Reajuste"
+                    value={analysis.keyMetrics.readjustment}
+                    icon={<RefreshCw size={18} />}
                     color="#3b82f6"
                   />
                   <AnalysisMetricCard
-                    label="Prob. Renovação"
-                    value={`${analysis.keyMetrics.renewalProbability}%`}
-                    icon={<RefreshCw size={18} />}
-                    color={
-                      analysis.keyMetrics.renewalProbability >= 70
-                        ? "#10b981"
-                        : analysis.keyMetrics.renewalProbability >= 40
-                          ? "#f59e0b"
-                          : "#ef4444"
-                    }
+                    label="Multa"
+                    value={analysis.keyMetrics.penalties}
+                    icon={<AlertTriangle size={18} />}
+                    color="#ef4444"
                   />
                 </div>
               )}
@@ -164,11 +322,7 @@ export default function ContratoDetailPage({
                 />
               </div>
 
-              {/* Charts Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <BillingChart data={analysis.billingHistory} />
-                <ExpenseBarChart data={analysis.expenseBreakdown} />
-              </div>
+
 
               {/* Suspicious Clauses + Pie Chart */}
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">

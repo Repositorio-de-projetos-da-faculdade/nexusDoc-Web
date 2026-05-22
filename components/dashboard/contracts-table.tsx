@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input, Select } from "@/components/ui/input";
-import { formatDate, formatCurrency, cn } from "@/lib/utils";
-import { useData } from "@/contexts/data-context";
-import { Eye } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { Eye, Loader2, Sparkles } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { contractsService } from "@/lib/services/contracts.service";
 
 const STATUSES: { value: string; label: string }[] = [
   { value: "all", label: "Todos status" },
@@ -26,78 +27,57 @@ function SortIcon({ field, currentField, isAsc }: { field: string; currentField:
 }
 
 export function ContractsTable() {
-  const { contracts, categories } = useData();
   const router = useRouter();
 
-  const [searchId, setSearchId] = useState("");
   const [searchTitle, setSearchTitle] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [sortField, setSortField] = useState<"id" | "title" | "value" | "endDate">("id");
-  const [sortAsc, setSortAsc] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (val === "" || /^[0-9\b]+$/.test(val)) {
-      setSearchId(val);
-    }
-  };
+  // Debounce the search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTitle);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchTitle]);
 
-  const filtered = contracts
-    .filter((c) => {
-      const matchId = searchId === "" || c.id.includes(searchId);
-      const matchTitle =
-        c.title.toLowerCase().includes(searchTitle.toLowerCase()) ||
-        c.counterparty.toLowerCase().includes(searchTitle.toLowerCase());
-      const matchStatus = statusFilter === "all" || c.status === statusFilter;
-      const matchCat = categoryFilter === "all" || c.categoryId === categoryFilter;
-      return matchId && matchTitle && matchStatus && matchCat;
-    })
-    .sort((a, b) => {
-      let cmp = 0;
-      if (sortField === "id") cmp = parseInt(a.id) - parseInt(b.id);
-      else if (sortField === "value") cmp = a.value - b.value;
-      else if (sortField === "endDate") cmp = new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
-      else cmp = a.title.localeCompare(b.title);
-      return sortAsc ? cmp : -cmp;
-    });
+  const isSearching = debouncedSearch.trim().length >= 3;
 
-  function toggleSort(field: typeof sortField) {
-    if (sortField === field) setSortAsc((v) => !v);
-    else { setSortField(field); setSortAsc(true); }
-  }
+  // Query de listagem geral — carrega ao abrir a página
+  const { data: listResponse, isLoading: isListLoading } = useQuery({
+    queryKey: ["contracts-list"],
+    queryFn: () => contractsService.listContracts(1, 50),
+    enabled: !isSearching,
+  });
+
+  // Query de busca semântica — só dispara com 3+ caracteres
+  const { data: searchResponse, isLoading: isSearchLoading } = useQuery({
+    queryKey: ["contracts-search", debouncedSearch],
+    queryFn: () => contractsService.searchContracts(debouncedSearch, 50),
+    enabled: isSearching,
+  });
+
+  const isLoading = isSearching ? isSearchLoading : isListLoading;
+  const results = isSearching
+    ? (searchResponse?.results ?? [])
+    : (listResponse?.results ?? []);
+
 
   return (
     <div className="flex flex-col gap-4 h-full">
       <div className="flex flex-wrap gap-3 items-center">
-        <div className="w-24 shrink-0">
+        <div className="flex-1 min-w-[300px]">
           <Input
-            placeholder="ID..."
-            value={searchId}
-            onChange={handleIdChange}
-          />
-        </div>
-        <div className="flex-1 min-w-48">
-          <Input
-            placeholder="Buscar por título ou parte…"
+            placeholder="Busca semântica avançada (Ex: 'Contratos com multa por atraso'...)"
             value={searchTitle}
             onChange={(e) => setSearchTitle(e.target.value)}
             icon={
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-              </svg>
+              <Sparkles className="h-4 w-4 text-[var(--primary)]" />
             }
           />
         </div>
-        <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </Select>
-        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-          <option value="all">Todas as Categorias</option>
-          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </Select>
-        <span className="text-xs text-[var(--muted-foreground)] ml-auto">
-          {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
+        <span className="text-xs text-[var(--muted-foreground)] ml-auto flex items-center gap-2">
+          {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+          {results.length} resultado{results.length !== 1 ? "s" : ""}
         </span>
       </div>
 
@@ -106,77 +86,72 @@ export function ContractsTable() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[var(--border)] bg-[var(--muted)]/50">
-                <th 
-                  className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide cursor-pointer hover:text-[var(--foreground)] w-16"
-                  onClick={() => toggleSort("id")}
-                >
-                  ID <SortIcon field="id" currentField={sortField} isAsc={sortAsc} />
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">
+                  ID
                 </th>
-                <th
-                  className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide cursor-pointer hover:text-[var(--foreground)]"
-                  onClick={() => toggleSort("title")}
-                >
-                  Título <SortIcon field="title" currentField={sortField} isAsc={sortAsc} />
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">
+                  Título do Documento
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden md:table-cell">Parte</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">Status</th>
-                <th
-                  className="text-right px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide cursor-pointer hover:text-[var(--foreground)] hidden lg:table-cell"
-                  onClick={() => toggleSort("value")}
-                >
-                  Valor <SortIcon field="value" currentField={sortField} isAsc={sortAsc} />
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">
+                  Status
                 </th>
-                <th
-                  className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide cursor-pointer hover:text-[var(--foreground)] hidden xl:table-cell"
-                  onClick={() => toggleSort("endDate")}
-                >
-                  Vencimento <SortIcon field="endDate" currentField={sortField} isAsc={sortAsc} />
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden md:table-cell w-1/3">
+                  Trecho Extraído
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden xl:table-cell">Categoria</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden sm:table-cell">
+                  Relevância
+                </th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-[var(--muted-foreground)] text-sm">
+                  <td colSpan={6} className="px-4 py-12 text-center text-[var(--muted-foreground)] text-sm">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-[var(--primary)]" />
+                    Buscando contratos...
+                  </td>
+                </tr>
+              ) : results.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-[var(--muted-foreground)] text-sm">
                     Nenhum contrato encontrado.
                   </td>
                 </tr>
               ) : (
-                filtered.map((contract, idx) => (
+                results.map((contract, idx) => (
                   <tr
-                    key={contract.id}
-                    onClick={() => router.push(`/contratos/${contract.id}`)}
+                    key={contract.contract_id}
+                    onClick={() => router.push(`/contratos/${contract.contract_id}`)}
                     className={cn(
                       "border-b border-[var(--border)] last:border-0 hover:bg-[var(--accent)]/40 transition-colors duration-150 cursor-pointer group",
                       idx % 2 === 0 ? "" : "bg-[var(--muted)]/20"
                     )}
                   >
-                    <td className="px-4 py-3">
-                      <span className="text-xs font-bold text-[var(--foreground)]">{contract.id}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-[var(--foreground)] truncate max-w-[200px]">{contract.title}</p>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="text-[var(--muted-foreground)] truncate max-w-[160px] block">{contract.counterparty}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={contract.status} />
-                    </td>
-                    <td className="px-4 py-3 text-right hidden lg:table-cell">
-                      <span className="font-semibold text-[var(--foreground)]">{formatCurrency(contract.value)}</span>
-                    </td>
-                    <td className="px-4 py-3 hidden xl:table-cell">
-                      <span className="text-[var(--muted-foreground)]">{formatDate(contract.endDate)}</span>
-                    </td>
-                    <td className="px-4 py-3 hidden xl:table-cell">
-                      <span className="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] rounded-md px-2 py-0.5">
-                        {categories.find(c => c.id === contract.categoryId)?.name || "—"}
+                    <td className="px-4 py-4">
+                      <span className="text-xs font-mono font-bold text-[var(--foreground)] opacity-70">
+                        {contract.contract_id.split('-')[0]}...
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-4">
+                      <p className="font-medium text-[var(--foreground)] truncate max-w-[200px] lg:max-w-[300px]">
+                        {contract.title}
+                      </p>
+                    </td>
+                    <td className="px-4 py-4">
+                      <StatusBadge status={contract.status as any} />
+                    </td>
+                    <td className="px-4 py-4 hidden md:table-cell">
+                      <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 italic border-l-2 border-[var(--border)] pl-2">
+                        "{contract.snippet}"
+                      </p>
+                    </td>
+                    <td className="px-4 py-4 text-center hidden sm:table-cell">
+                      <div className="inline-flex items-center justify-center bg-[var(--accent)] text-[var(--primary)] text-xs font-bold px-2 py-1 rounded-md">
+                        {Math.round(contract.similarity * 100)}%
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-right">
                       <Button variant="ghost" size="sm" className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                         <Eye size={14} className="mr-1" />
                         Ver

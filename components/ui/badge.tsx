@@ -8,7 +8,14 @@ interface BadgeProps {
 }
 
 export function StatusBadge({ status, className }: BadgeProps) {
-  const config = STATUS_CONFIG[status];
+  const normalizedStatus = (status?.toLowerCase() || "draft") as keyof typeof STATUS_CONFIG;
+  const config = STATUS_CONFIG[normalizedStatus] || {
+    label: status || "Desconhecido",
+    color: "text-gray-500 dark:text-gray-400",
+    bg: "bg-gray-100 dark:bg-gray-800",
+    dot: "bg-gray-400",
+  };
+
   return (
     <span
       className={cn(
@@ -23,6 +30,7 @@ export function StatusBadge({ status, className }: BadgeProps) {
     </span>
   );
 }
+
 
 interface GenericBadgeProps {
   children: React.ReactNode;

@@ -4,17 +4,19 @@ import { useState } from "react";
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function PerfilPage() {
   const [emailNotif, setEmailNotif] = useState(true);
   const [twoFactor, setTwoFactor] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const { user, logout } = useAuth();
   
   const [profile, setProfile] = useState({
-    name: "Lucas Ferreira",
-    role: "Administrador do Sistema",
-    email: "lucas.ferreira@gracon.com.br"
+    name: user?.name || "Usuário",
+    role: "Membro", // Backend doesn't provide role in User object directly, it's in workspaces
+    email: user?.email || ""
   });
 
   const [editForm, setEditForm] = useState({ ...profile });
@@ -136,7 +138,10 @@ export default function PerfilPage() {
             </div>
             
             <div className="mt-8">
-              <Button variant="destructive" size="sm" className="w-full sm:w-auto" onClick={() => alert('Saindo da conta...')}>
+              <Button variant="destructive" size="sm" className="w-full sm:w-auto" onClick={() => {
+                logout();
+                window.location.href = '/';
+              }}>
                 Sair da Conta
               </Button>
             </div>

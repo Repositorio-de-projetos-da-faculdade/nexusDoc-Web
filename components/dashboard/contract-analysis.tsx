@@ -1,18 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/utils";
-import type { SuspiciousClause, ContractAnalysis } from "@/lib/contract-analysis-data";
+
+import type { SuspiciousClause } from "@/lib/contract-analysis-data";
 import {
   ShieldAlert,
   ShieldCheck,
   ShieldQuestion,
   AlertTriangle,
   CheckCircle2,
-  TrendingUp,
   Clock,
-  DollarSign,
-  RefreshCw,
   Lightbulb,
   Sparkles,
 } from "lucide-react";

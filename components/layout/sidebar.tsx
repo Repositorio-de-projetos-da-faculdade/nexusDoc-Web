@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAlerts } from "@/contexts/alerts-context";
 import { useSidebar } from "@/contexts/sidebar-context";
+import { useAuth } from "@/contexts/auth-context";
 
 import React, { useState } from "react";
 import {
@@ -17,6 +18,7 @@ import {
   BarChart,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react";
 
 type NavItem = {
@@ -34,12 +36,14 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Partes", href: "/partes", icon: <Building2 size={20} /> },
   { label: "Alertas", href: "/alertas", icon: <Bell size={20} /> },
   { label: "Relatórios", href: "/relatorios", icon: <BarChart size={20} /> },
+  { label: "Equipe", href: "/perfil/equipe", icon: <Users size={20} /> },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { unreadCount } = useAlerts();
   const { collapsed, toggleSidebar } = useSidebar();
+  const { user, activeWorkspace } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
 
   // The sidebar is expanded if it's not persistently collapsed OR if it's currently hovered
@@ -178,22 +182,22 @@ export function Sidebar() {
       <div className="py-3 px-2 border-t border-[var(--sidebar-border)] space-y-1">
         <Link
           href="/perfil"
-          title={!isExpanded ? "Lucas Ferreira" : undefined}
+          title={!isExpanded ? (user?.name || "Perfil") : undefined}
           className={cn(
             "flex items-center rounded-lg hover:bg-[var(--muted)] transition-all duration-200 cursor-pointer group relative",
             !isExpanded ? "justify-center px-0 py-2.5 mx-auto w-11 h-11" : "gap-2.5 px-2.5 py-2"
           )}
         >
           <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[var(--primary)] to-emerald-600 flex items-center justify-center shrink-0">
-            <span className="text-white text-xs font-bold">L</span>
+            <span className="text-white text-xs font-bold">{user?.name?.charAt(0).toUpperCase() || "U"}</span>
           </div>
           {isExpanded && (
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-[var(--foreground)] truncate font-oxanium">
-                Lucas Ferreira
+                {user?.name || "Usuário"}
               </p>
               <p className="text-[10px] text-[var(--muted-foreground)] truncate font-oxanium">
-                Administrador
+                {activeWorkspace?.role || "Membro"}
               </p>
             </div>
           )}
@@ -201,7 +205,7 @@ export function Sidebar() {
           {/* Tooltip for collapsed mode */}
           {!isExpanded && (
             <div className="absolute left-full ml-2 px-2.5 py-1.5 bg-[var(--foreground)] text-[var(--background)] text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 pointer-events-none shadow-lg font-oxanium">
-              Lucas Ferreira
+              {user?.name || "Perfil"}
               <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-[var(--foreground)] rotate-45" />
             </div>
           )}

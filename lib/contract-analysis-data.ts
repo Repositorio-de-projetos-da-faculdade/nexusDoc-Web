@@ -1,4 +1,4 @@
-import type { Contract } from "@/types";
+
 
 // ============================================================
 // Contract AI Analysis — Mock data simulating backend/AI JSON
