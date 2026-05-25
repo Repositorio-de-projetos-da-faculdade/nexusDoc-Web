@@ -156,3 +156,41 @@ export interface ContractDetailResponse {
   ok: boolean;
   data: ContractDetail;
 }
+
+export interface DocumentUploader {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface DocumentItem {
+  id: string;
+  contract_id: string;
+  workspace_id: string;
+  name: string;
+  mime_type: string;
+  size_bytes: number;
+  uploaded_by: DocumentUploader;
+  created_at: string;
+}
+
+export interface WorkspaceDocumentItem extends DocumentItem {
+  contract_title: string;
+}
+
+export interface DocumentListResponse {
+  ok: boolean;
+  total: number;
+  results: DocumentItem[];
+}
+
+export interface WorkspaceDocumentListResponse {
+  ok: boolean;
+  total: number;
+  results: WorkspaceDocumentItem[];
+}
+
+export interface DocumentUploadResponse {
+  ok: boolean;
+  data: DocumentItem;
+}
