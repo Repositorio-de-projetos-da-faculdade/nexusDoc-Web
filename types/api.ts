@@ -68,7 +68,10 @@ export interface ContractSearchResponse {
 export interface ContractListResult {
   contract_id: string;
   title: string;
+  /** Enum bruto do backend (Prisma `ContractStatus`, ex: `ACTIVE`). */
   status: string;
+  /** Versão snake_case lowercase pronta para `getStatusVisual`. */
+  status_display?: string;
   file_url: string;
   created_at: string;
   updated_at: string;
@@ -116,11 +119,16 @@ export interface UpdateMemberRoleRequest {
 export interface ContractDetailData {
   id: string;
   title: string;
+  /** Enum bruto do backend (Prisma `ContractStatus`, ex: `ACTIVE`). */
   status: string;
+  /** Versão snake_case lowercase pronta para `getStatusVisual`. */
+  status_display?: string;
   file_url: string;
   created_at: string;
   updated_at: string;
 }
+
+import type { GeminiExtraction } from './gemini';
 
 export interface ContractExtraction {
   parties: {
@@ -128,6 +136,8 @@ export interface ContractExtraction {
     contract_id: string;
     name: string;
     type: 'CONTRACTOR' | 'HIRED' | string;
+    /** Versão lowercase do `type`, populada pelo backend (`mapPartyTypeToUi`). */
+    type_display?: 'contractor' | 'hired' | string;
   }[];
   clauses: {
     id: string;
@@ -144,7 +154,13 @@ export interface ContractExtraction {
     start_date: string | null;
     end_date: string | null;
   };
-  summary: any;
+  /**
+   * Resposta do Gemini validada pelo backend (`GeminiExtractionSchema`).
+   * Pode ser `null` se a extração falhou ou se o documento não era
+   * contrato. Pode ser parcial se o backend logou warnings (drift de
+   * schema) — sempre defenda contra campos faltantes na UI.
+   */
+  summary: GeminiExtraction | null;
 }
 
 export interface ContractDetail {

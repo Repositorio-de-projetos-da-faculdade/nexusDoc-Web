@@ -1,20 +1,14 @@
 import { cn } from "@/lib/utils";
 import type { ContractStatus } from "@/types";
-import { STATUS_CONFIG } from "@/lib/mock-data";
+import { getStatusVisual } from "@/lib/status-mapper";
 
 interface BadgeProps {
-  status: ContractStatus;
+  status: ContractStatus | string;
   className?: string;
 }
 
 export function StatusBadge({ status, className }: BadgeProps) {
-  const normalizedStatus = (status?.toLowerCase() || "draft") as keyof typeof STATUS_CONFIG;
-  const config = STATUS_CONFIG[normalizedStatus] || {
-    label: status || "Desconhecido",
-    color: "text-gray-500 dark:text-gray-400",
-    bg: "bg-gray-100 dark:bg-gray-800",
-    dot: "bg-gray-400",
-  };
+  const config = getStatusVisual(status);
 
   return (
     <span
