@@ -156,3 +156,66 @@ export interface ContractDetailResponse {
   ok: boolean;
   data: ContractDetail;
 }
+
+// ==========================================
+// PARTIES (workspace-level)
+// ==========================================
+
+export type PartyKind = 'CLIENT' | 'SUPPLIER' | 'PARTNER' | 'INTERNAL';
+export type PartyStatusBackend = 'ACTIVE' | 'INACTIVE';
+
+export interface PartyResponse {
+  id: string;
+  workspace_id: string;
+  name: string;
+  cnpj: string | null;
+  email: string | null;
+  contact: string | null;
+  kind: PartyKind;
+  status: PartyStatusBackend;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PartyListResponse {
+  ok: boolean;
+  total: number;
+  page: number;
+  limit: number;
+  results: PartyResponse[];
+}
+
+export interface PartyDetailResponse {
+  ok: boolean;
+  data: PartyResponse;
+}
+
+export interface CreatePartyRequest {
+  name: string;
+  kind: PartyKind;
+  cnpj?: string | null;
+  email?: string | null;
+  contact?: string | null;
+  status?: PartyStatusBackend;
+}
+
+export type UpdatePartyRequest = Partial<CreatePartyRequest>;
+
+export const PARTY_KIND_LABEL: Record<PartyKind, 'Cliente' | 'Fornecedor' | 'Parceiro' | 'Interno'> = {
+  CLIENT: 'Cliente',
+  SUPPLIER: 'Fornecedor',
+  PARTNER: 'Parceiro',
+  INTERNAL: 'Interno',
+};
+
+export const PARTY_LABEL_TO_KIND: Record<'Cliente' | 'Fornecedor' | 'Parceiro' | 'Interno', PartyKind> = {
+  Cliente: 'CLIENT',
+  Fornecedor: 'SUPPLIER',
+  Parceiro: 'PARTNER',
+  Interno: 'INTERNAL',
+};
+
+export const PARTY_STATUS_LABEL: Record<PartyStatusBackend, 'Ativo' | 'Inativo'> = {
+  ACTIVE: 'Ativo',
+  INACTIVE: 'Inativo',
+};
