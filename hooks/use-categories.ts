@@ -1,28 +1,31 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MOCK_CATEGORIES } from "@/lib/mock-data";
+import { categoriesService } from "@/lib/services/categories.service";
 import type { Category } from "@/types";
+import type { CategoryResponse } from "@/types/api";
 
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+function toCategory(c: CategoryResponse): Category {
+  return { id: c.id, name: c.name };
+}
 
 export function useCategories() {
   const queryClient = useQueryClient();
 
   // Buscar todas as categorias
-  const { data: categories = [], isLoading } = useQuery({
+  const { data: categories = [], isLoading } = useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: async () => {
-      await delay(500);
-      return [...MOCK_CATEGORIES] as Category[];
+      const response = await categoriesService.listCategories();
+      return response.results.map(toCategory);
     },
   });
 
   // Mutação para adicionar categoria
   const addCategory = useMutation({
     mutationFn: async (name: string) => {
-      await delay(500);
-      return { id: Math.random().toString(), name } as Category;
+      const response = await categoriesService.createCategory({ name });
+      return toCategory(response.data);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -30,8 +33,10 @@ export function useCategories() {
         description: `A categoria "${data.name}" foi criada com sucesso.`,
       });
     },
-    onError: () => {
-      toast.error("Erro ao criar categoria");
+    onError: (error: Error) => {
+      toast.error("Erro ao criar categoria", {
+        description: error.message,
+      });
     },
   });
 

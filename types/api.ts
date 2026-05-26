@@ -172,3 +172,34 @@ export interface ContractDetailResponse {
   ok: boolean;
   data: ContractDetail;
 }
+
+export interface CategoryResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+  contracts_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CategoryListResponse {
+  ok: boolean;
+  total: number;
+  results: CategoryResponse[];
+}
+
+export interface CategoryMutationResponse {
+  ok: boolean;
+  data: CategoryResponse;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  description?: string | null;
+  color?: string | null;
+  icon?: string | null;
+}
+
+export type UpdateCategoryRequest = Partial<CreateCategoryRequest>;
