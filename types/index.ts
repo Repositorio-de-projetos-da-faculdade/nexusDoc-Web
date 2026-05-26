@@ -1,9 +1,28 @@
-export type ContractStatus =
+/**
+ * Estados de contrato vindos do backend (Prisma enum `ContractStatus`),
+ * em snake_case lowercase. Veja `src/types/status.ts` no backend.
+ */
+export type BackendContractStatus =
+  | "processing"
+  | "pending_legal"
+  | "pending_finance"
+  | "active"
+  | "expiring"
+  | "expired"
+  | "in_review";
+
+/**
+ * Estados legados ainda usados por mocks/UI. Mantidos por compatibilidade
+ * durante a migração — sempre prefira `BackendContractStatus` em código novo.
+ */
+export type LegacyContractStatus =
   | "active"
   | "pending"
   | "expired"
   | "draft"
   | "cancelled";
+
+export type ContractStatus = BackendContractStatus | LegacyContractStatus;
 
 export interface Contract {
   id: string;
