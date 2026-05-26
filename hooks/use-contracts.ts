@@ -2,30 +2,54 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MOCK_CONTRACTS } from "@/lib/mock-data";
-import type { Contract } from "@/types";
+import type { Contract, ContractStatus } from "@/types";
 import { contractsService } from "@/lib/services/contracts.service";
+import { normalizeStatus } from "@/lib/status-mapper";
 
-// Simulação de delay para API
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+/**
+ * Mapeia o payload enxuto de `GET /contracts` para o tipo `Contract`
+ * usado pela UI. Campos que só existem em `ExtractedData` (valor, datas,
+ * contraparte) precisam de chamada ao endpoint de detalhe — aqui ficam
+ * com defaults sensatos.
+ */
+function mapListResultToContract(r: {
+  contract_id: string;
+  title: string;
+  status: string;
+  status_display?: string;
+  file_url: string;
+  created_at: string;
+  updated_at: string;
+}): Contract {
+  return {
+    id: r.contract_id,
+    title: r.title,
+    counterparty: "—",
+    status: normalizeStatus(r.status_display ?? r.status) as ContractStatus,
+    value: 0,
+    startDate: r.created_at,
+    endDate: "",
+    categoryId: "",
+    owner: "—",
+    tags: [],
+    lastUpdated: r.updated_at,
+  };
+}
 
 export function useContracts() {
   const queryClient = useQueryClient();
 
-  // Buscar todos os contratos
   const { data: contracts = [], isLoading } = useQuery({
     queryKey: ["contracts"],
     queryFn: async () => {
-      // Aqui entraria o fetch real: const res = await fetch('/api/contracts'); return res.json();
-      await delay(800);
-      return [...MOCK_CONTRACTS];
+      const res = await contractsService.listContracts(1, 100);
+      return res.results.map(mapListResultToContract);
     },
   });
 
-  // Mutação para upload e análise por IA
+  // Upload real de PDF (extração via Gemini no backend)
   const uploadContract = useMutation({
     mutationFn: async (file: File) => {
-      // Faz o upload real do PDF para o Backend
       toast.info("Enviando documento...", {
         description: "A IA iniciará a extração de dados automaticamente.",
       });
@@ -33,15 +57,18 @@ export function useContracts() {
       const response = await contractsService.uploadContract(file);
       const contractData = response.data.contract as Partial<Contract>;
 
-      // O backend retorna os dados extraídos. Mapeamos para o tipo Contract do frontend.
-      return { 
-        id: contractData.id || Math.random().toString(), 
+      return {
+        id: contractData.id || crypto.randomUUID(),
         title: contractData.title || file.name.replace(".pdf", ""),
-        counterparty: contractData.counterparty || "Extraído pela IA", 
-        status: contractData.status || "pending",
+        counterparty: contractData.counterparty || "Extraído pela IA",
+        status: contractData.status || "processing",
         value: contractData.value || 0,
-        startDate: contractData.startDate || new Date().toISOString().split('T')[0],
-        owner: contractData.owner || "Usuário Logado",
+        startDate: contractData.startDate || new Date().toISOString().split("T")[0],
+        endDate: contractData.endDate || "",
+        categoryId: contractData.categoryId || "",
+        owner: contractData.owner || "—",
+        tags: [],
+        lastUpdated: new Date().toISOString().split("T")[0],
       } as Contract;
     },
     onSuccess: (data) => {
@@ -57,21 +84,21 @@ export function useContracts() {
     },
   });
 
+  /**
+   * Criação manual sem PDF não é suportada pelo backend hoje (só /contracts/upload).
+   * Mantida como stub para a página `/contratos/novo` que ainda existe — o ideal
+   * é redirecionar o usuário para o upload.
+   */
   const addContract = useMutation({
-    mutationFn: async (contractData: Omit<Contract, "id" | "lastUpdated">) => {
-      await delay(500);
-      return { 
-        ...contractData, 
-        id: Math.random().toString(), 
-        lastUpdated: new Date().toISOString().split("T")[0] 
-      } as Contract;
+    mutationFn: async (_contractData: Omit<Contract, "id" | "lastUpdated">) => {
+      throw new Error(
+        "Cadastro manual ainda não suportado. Use o upload de PDF na tela principal."
+      );
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contracts"] });
-      toast.success("Contrato criado!");
-    },
-    onError: () => {
-      toast.error("Erro ao criar contrato");
+    onError: (err: Error) => {
+      toast.error("Cadastro manual indisponível", {
+        description: err.message,
+      });
     },
   });
 

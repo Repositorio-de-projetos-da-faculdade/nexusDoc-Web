@@ -91,7 +91,9 @@ export default function ContratoDetailPage({
   const analysis = useMemo(() => {
     if (!contractDetail) return null;
     
-    const json = contractDetail.extraction.summary || {};
+    // O backend valida `summary` contra `GeminiExtractionSchema`. Pode vir null
+    // ou parcial — defendemos contra qualquer campo faltante na UI.
+    const json = (contractDetail.extraction.summary ?? {}) as Record<string, any>;
     
     // Calcula vigência básica
     const start = contractDetail.extraction.dates?.start_date ? new Date(contractDetail.extraction.dates.start_date).getTime() : Date.now();

@@ -143,12 +143,12 @@ export function ContractsTable() {
                     </td>
                     <td className="px-4 py-4 hidden md:table-cell">
                       <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 italic border-l-2 border-[var(--border)] pl-2">
-                        "{contract.snippet}"
+                        "{('snippet' in contract && contract.snippet) || ''}"
                       </p>
                     </td>
                     <td className="px-4 py-4 text-center hidden sm:table-cell">
                       <div className="inline-flex items-center justify-center bg-[var(--accent)] text-[var(--primary)] text-xs font-bold px-2 py-1 rounded-md">
-                        {Math.round(contract.similarity * 100)}%
+                        {Math.round((('similarity' in contract ? contract.similarity : 0)) * 100)}%
                       </div>
                     </td>
                     <td className="px-4 py-4 text-right">

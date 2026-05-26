@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import { MOCK_ALERTS } from "@/lib/mock-data";
 import type { Alert } from "@/types";
 
 interface AlertsContextType {
@@ -13,8 +12,14 @@ interface AlertsContextType {
 
 const AlertsContext = createContext<AlertsContextType | undefined>(undefined);
 
+/**
+ * Estado de alertas. Hoje começa vazio — o backend ainda não expõe
+ * `GET /alerts`. A intenção é puxar alertas derivados dos `TimelineEvent`s
+ * + `Alert` model (já existem no schema Prisma) assim que esse endpoint
+ * estiver no ar.
+ */
 export function AlertsProvider({ children }: { children: React.ReactNode }) {
-  const [alerts, setAlerts] = useState<Alert[]>(MOCK_ALERTS);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
 
   const unreadCount = alerts.filter((a) => !a.read).length;
 

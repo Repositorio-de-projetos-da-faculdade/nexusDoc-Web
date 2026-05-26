@@ -12,7 +12,8 @@ interface TopbarProps {
 
 export function Topbar({ title, subtitle, action }: TopbarProps) {
   const { theme, setTheme } = useTheme();
-  const { user, activeWorkspaceId, switchWorkspace } = useAuth();
+  const { user, activeWorkspace, switchWorkspace } = useAuth();
+  const activeWorkspaceId = activeWorkspace?.id;
 
   return (
     <header className="flex items-center gap-4 px-6 py-4 border-b border-[var(--border)] bg-[var(--card)] shrink-0">
