@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MOCK_CONTRACTS } from "@/lib/mock-data";
 import type { Contract } from "@/types";
+import { contractsService } from "@/lib/services/contracts.service";
 
 // Simulação de delay para API
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -24,24 +25,23 @@ export function useContracts() {
   // Mutação para upload e análise por IA
   const uploadContract = useMutation({
     mutationFn: async (file: File) => {
-      // Simulação de upload do PDF
-      await delay(1500);
-      
-      // Simulação da análise da IA do Backend
-      toast.info("IA analisando documento...", {
-        description: "Extraindo contraparte, datas e valores automaticamente.",
+      // Faz o upload real do PDF para o Backend
+      toast.info("Enviando documento...", {
+        description: "A IA iniciará a extração de dados automaticamente.",
       });
-      await delay(2500);
 
-      // Simulação de sucesso
+      const response = await contractsService.uploadContract(file);
+      const contractData = response.data.contract as Partial<Contract>;
+
+      // O backend retorna os dados extraídos. Mapeamos para o tipo Contract do frontend.
       return { 
-        id: Math.random().toString(), 
-        title: file.name.replace(".pdf", ""),
-        counterparty: "Extraído pela IA...", 
-        status: "pending",
-        value: 0,
-        startDate: new Date().toISOString().split('T')[0],
-        owner: "Lucas Ferreira",
+        id: contractData.id || Math.random().toString(), 
+        title: contractData.title || file.name.replace(".pdf", ""),
+        counterparty: contractData.counterparty || "Extraído pela IA", 
+        status: contractData.status || "pending",
+        value: contractData.value || 0,
+        startDate: contractData.startDate || new Date().toISOString().split('T')[0],
+        owner: contractData.owner || "Usuário Logado",
       } as Contract;
     },
     onSuccess: (data) => {
@@ -57,9 +57,28 @@ export function useContracts() {
     },
   });
 
+  const addContract = useMutation({
+    mutationFn: async (contractData: Omit<Contract, "id" | "lastUpdated">) => {
+      await delay(500);
+      return { 
+        ...contractData, 
+        id: Math.random().toString(), 
+        lastUpdated: new Date().toISOString().split("T")[0] 
+      } as Contract;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contracts"] });
+      toast.success("Contrato criado!");
+    },
+    onError: () => {
+      toast.error("Erro ao criar contrato");
+    },
+  });
+
   return {
     contracts,
     isLoading,
     uploadContract,
+    addContract,
   };
 }

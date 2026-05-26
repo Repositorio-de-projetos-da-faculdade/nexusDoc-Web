@@ -6,9 +6,9 @@ import { RecentContracts } from "@/components/dashboard/recent-contracts";
 import { AlertsPanel } from "@/components/dashboard/alerts-panel";
 import { StatusChart } from "@/components/dashboard/status-chart";
 import { UploadContractModal } from "@/components/dashboard/upload-contract-modal";
-import { Button } from "@/components/ui/button";
+
 import { formatCurrency } from "@/lib/utils";
-import { useData } from "@/contexts/data-context";
+import { useContracts } from "@/hooks/use-contracts";
 import type { Contract } from "@/types";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -20,8 +20,7 @@ import {
   PlusSquare, 
   Upload, 
   BarChart, 
-  Bell,
-  Plus
+  Bell
 } from "lucide-react";
 
 function getTotalValue(contracts: Contract[]) {
@@ -44,7 +43,7 @@ const itemVariants = {
 };
 
 export default function DashboardPage() {
-  const { contracts } = useData();
+  const { contracts } = useContracts();
   
   const total = contracts.length;
   const active = contracts.filter((c) => c.status === "active").length;

@@ -1,7 +1,18 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Oxanium, Inter } from "next/font/google";
 import { AppShell } from "@/components/layout/app-shell";
 import { Providers } from "@/components/providers";
+
+const oxanium = Oxanium({
+  subsets: ["latin"],
+  variable: "--font-oxanium",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "Gracon — Gestão de Contratos",
@@ -17,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning className={`${oxanium.variable} ${inter.variable}`}>
+      <body suppressHydrationWarning className="font-sans">
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

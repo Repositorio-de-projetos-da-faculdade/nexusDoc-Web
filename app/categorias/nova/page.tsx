@@ -5,19 +5,22 @@ import { useRouter } from "next/navigation";
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useData } from "@/contexts/data-context";
+import { useCategories } from "@/hooks/use-categories";
 
 export default function NovaCategoriaPage() {
   const router = useRouter();
-  const { addCategory } = useData();
+  const { addCategory } = useCategories();
   const [name, setName] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
     
-    addCategory(name.trim());
-    router.push("/contratos");
+    addCategory.mutate(name.trim(), {
+      onSuccess: () => {
+        router.push("/contratos");
+      },
+    });
   };
 
   return (

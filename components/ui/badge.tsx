@@ -1,14 +1,15 @@
 import { cn } from "@/lib/utils";
 import type { ContractStatus } from "@/types";
-import { STATUS_CONFIG } from "@/lib/mock-data";
+import { getStatusVisual } from "@/lib/status-mapper";
 
 interface BadgeProps {
-  status: ContractStatus;
+  status: ContractStatus | string;
   className?: string;
 }
 
 export function StatusBadge({ status, className }: BadgeProps) {
-  const config = STATUS_CONFIG[status];
+  const config = getStatusVisual(status);
+
   return (
     <span
       className={cn(
@@ -23,6 +24,7 @@ export function StatusBadge({ status, className }: BadgeProps) {
     </span>
   );
 }
+
 
 interface GenericBadgeProps {
   children: React.ReactNode;

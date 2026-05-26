@@ -30,7 +30,7 @@ O projeto deixou de ser um "protótipo de IA" para se tornar um **SaaS B2B de el
     *   Criação de logo oficial (Variações: Ícone, Horizontal e Vertical).
     *   Nova paleta de cores: *Dark Green (#021209)* + *Electric Lime (#ccff00)*.
 *   **Design System**:
-    *   Substituição de emojis amadores por **Lucide Icons** padronizados.
+    *   Substituição de emojis por **Lucide Icons** padronizados.
     *   Remoção de efeitos de vidro excessivos em favor de um *Flat Design* estruturado e corporativo.
 *   **Interatividade**:
     *   Implementação de micro-animações com `framer-motion` (stagger effects).
@@ -48,24 +48,10 @@ Abandonamos estados manuais em favor de um gerenciamento de cache profissional.
 ---
 
 ## 5. Pendências Técnicas e Débito
-Apesar da interface estar pronta para impressionar, há pontos que precisam de atenção para o lançamento real:
+Apesar da interface estar pronta, há pontos que precisam de atenção para o lançamento real:
 
 1.  **Integração de API**: As mutations no `use-contracts.ts` ainda são simulações (`delay`). É necessário trocar as URLs por endpoints reais do seu backend.
 2.  **Persistência de Arquivos**: O upload do PDF precisa ser conectado a um storage (S3/Cloudinary) ou enviado via `FormData` para o backend.
 3.  **Skeleton States**: Implementamos no dashboard, mas seria ideal expandir para as páginas internas de listagem.
 4.  **Responsividade Fina**: O dashboard está 90% responsivo, mas as tabelas complexas precisam de tratamento para telas mobile muito pequenas.
 
----
-
-## 🚀 Próximos Passos (Roadmap)
-
-1.  **Sprint de Backend**: Mapear os endpoints de extração de IA.
-2.  **Autenticação**: Implementar NextAuth.js ou similar para proteger as rotas de contratos.
-3.  **Visualização de Documentos**: Adicionar um preview de PDF (ex: `react-pdf`) dentro da plataforma.
-4.  **Merge Final**: Realizar o merge da branch de ajustes na `main` para deploy na Vercel.
-
----
-
-**Status Final**: O projeto está em um nível visual e estrutural acima da média de mercado para MVPs de faculdade, pronto para ser o destaque do evento.
-
-*Relatório gerado por Antigravity.*
