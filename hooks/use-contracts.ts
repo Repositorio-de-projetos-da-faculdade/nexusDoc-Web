@@ -27,8 +27,11 @@ function mapListResultToContract(r: {
     counterparty: "—",
     status: normalizeStatus(r.status_display ?? r.status) as ContractStatus,
     value: 0,
+    // Datas reais vivem em ExtractedData; o endpoint de listagem não as devolve.
+    // Usamos created_at só como placeholder visual — null em endDate para que
+    // a UI mostre "—" via formatDate.
     startDate: r.created_at,
-    endDate: "",
+    endDate: null as unknown as string,
     categoryId: "",
     owner: "—",
     tags: [],
