@@ -173,6 +173,8 @@ export interface ContractDetailResponse {
   data: ContractDetail;
 }
 
+// ===== Categories =====
+
 export interface CategoryResponse {
   id: string;
   name: string;
@@ -203,3 +205,44 @@ export interface CreateCategoryRequest {
 }
 
 export type UpdateCategoryRequest = Partial<CreateCategoryRequest>;
+
+// ===== Templates =====
+
+export interface TemplateResponse {
+  id: string;
+  workspace_id?: string;
+  name: string;
+  description: string | null;
+  body?: string;
+  variables: string[];
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TemplateListResponse {
+  ok: boolean;
+  total: number;
+  page: number;
+  limit: number;
+  results: TemplateResponse[];
+}
+
+export interface TemplateDetailResponse {
+  ok: boolean;
+  data: TemplateResponse;
+}
+
+export interface CreateTemplateRequest {
+  name: string;
+  description?: string | null;
+  body: string;
+  variables?: string[];
+}
+
+export interface UpdateTemplateRequest {
+  name?: string;
+  description?: string | null;
+  body?: string;
+  variables?: string[];
+}
