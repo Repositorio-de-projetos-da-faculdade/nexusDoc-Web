@@ -54,7 +54,7 @@ export default function LoginPage() {
               <FileText className="text-[var(--primary-foreground)] h-8 w-8" />
             </div>
             <h1 className="text-4xl font-extrabold text-[var(--foreground)] tracking-tight font-[family-name:var(--font-oxanium)]">
-              Nexus<span className="text-[var(--primary)]">Doc</span>
+              Gra<span className="text-[var(--primary)]">con</span>
             </h1>
           </div>
 
@@ -87,7 +87,7 @@ export default function LoginPage() {
               <FileText className="text-[var(--primary-foreground)] h-6 w-6" />
             </div>
             <h1 className="text-3xl font-extrabold text-[var(--foreground)] tracking-tight font-[family-name:var(--font-oxanium)]">
-              Nexus<span className="text-[var(--primary)]">Doc</span>
+              Gra<span className="text-[var(--primary)]">con</span>
             </h1>
           </div>
 
