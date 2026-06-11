@@ -88,7 +88,7 @@ export const contractsService = {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'nexusdoc_report.pdf'); // Ou planilha, dependendo do backend
+    link.setAttribute('download', 'gracon_report.pdf'); // Ou planilha, dependendo do backend
     document.body.appendChild(link);
     link.click();
     link.remove();

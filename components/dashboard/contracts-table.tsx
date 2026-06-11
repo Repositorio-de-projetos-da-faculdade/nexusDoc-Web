@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { Eye, Loader2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { contractsService } from "@/lib/services/contracts.service";
@@ -87,20 +87,30 @@ export function ContractsTable() {
             <thead>
               <tr className="border-b border-[var(--border)] bg-[var(--muted)]/50">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">
-                  ID
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">
                   Título do Documento
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">
                   Status
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden md:table-cell w-1/3">
-                  Trecho Extraído
-                </th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden sm:table-cell">
-                  Relevância
-                </th>
+                {isSearching ? (
+                  <>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden md:table-cell w-1/3">
+                      Trecho Extraído
+                    </th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden sm:table-cell">
+                      Relevância
+                    </th>
+                  </>
+                ) : (
+                  <>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden md:table-cell">
+                      Valor
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide hidden sm:table-cell">
+                      Vencimento
+                    </th>
+                  </>
+                )}
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -129,28 +139,45 @@ export function ContractsTable() {
                     )}
                   >
                     <td className="px-4 py-4">
-                      <span className="text-xs font-mono font-bold text-[var(--foreground)] opacity-70">
-                        {contract.contract_id.split('-')[0]}...
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="font-medium text-[var(--foreground)] truncate max-w-[200px] lg:max-w-[300px]">
+                      <p className="font-medium text-[var(--foreground)] truncate max-w-[240px] lg:max-w-[360px]">
                         {contract.title}
                       </p>
+                      {!isSearching && 'counterparty' in contract && contract.counterparty && (
+                        <p className="text-xs text-[var(--muted-foreground)] truncate max-w-[240px] lg:max-w-[360px]">
+                          {contract.counterparty}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       <StatusBadge status={contract.status as any} />
                     </td>
-                    <td className="px-4 py-4 hidden md:table-cell">
-                      <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 italic border-l-2 border-[var(--border)] pl-2">
-                        "{('snippet' in contract && contract.snippet) || ''}"
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 text-center hidden sm:table-cell">
-                      <div className="inline-flex items-center justify-center bg-[var(--accent)] text-[var(--primary)] text-xs font-bold px-2 py-1 rounded-md">
-                        {Math.round((('similarity' in contract ? contract.similarity : 0)) * 100)}%
-                      </div>
-                    </td>
+                    {isSearching ? (
+                      <>
+                        <td className="px-4 py-4 hidden md:table-cell">
+                          <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 italic border-l-2 border-[var(--border)] pl-2">
+                            "{('snippet' in contract && contract.snippet) || ''}"
+                          </p>
+                        </td>
+                        <td className="px-4 py-4 text-center hidden sm:table-cell">
+                          <div className="inline-flex items-center justify-center bg-[var(--accent)] text-[var(--primary)] text-xs font-bold px-2 py-1 rounded-md">
+                            {Math.round((('similarity' in contract ? contract.similarity : 0)) * 100)}%
+                          </div>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-4 py-4 text-right hidden md:table-cell">
+                          <span className="font-semibold text-[var(--foreground)]">
+                            {formatCurrency('value' in contract ? contract.value : null)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 hidden sm:table-cell">
+                          <span className="text-xs text-[var(--muted-foreground)]">
+                            {formatDate('end_date' in contract ? contract.end_date : null)}
+                          </span>
+                        </td>
+                      </>
+                    )}
                     <td className="px-4 py-4 text-right">
                       <Button variant="ghost" size="sm" className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                         <Eye size={14} className="mr-1" />

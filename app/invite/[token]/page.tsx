@@ -75,7 +75,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
           </div>
           <h1 className="text-2xl font-bold text-[var(--foreground)]">Você foi convidado!</h1>
           <p className="text-[var(--muted-foreground)] mt-2 text-sm">
-            Uma empresa enviou um convite para você participar do NexusDoc.
+            Uma empresa enviou um convite para você participar do Gracon.
           </p>
         </div>
 

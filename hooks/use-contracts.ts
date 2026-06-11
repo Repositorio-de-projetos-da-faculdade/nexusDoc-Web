@@ -12,26 +12,17 @@ import { normalizeStatus } from "@/lib/status-mapper";
  * contraparte) precisam de chamada ao endpoint de detalhe — aqui ficam
  * com defaults sensatos.
  */
-function mapListResultToContract(r: {
-  contract_id: string;
-  title: string;
-  status: string;
-  status_display?: string;
-  file_url: string;
-  created_at: string;
-  updated_at: string;
-}): Contract {
+import type { ContractListResult } from "@/types/api";
+
+function mapListResultToContract(r: ContractListResult): Contract {
   return {
     id: r.contract_id,
     title: r.title,
-    counterparty: "—",
+    counterparty: r.counterparty ?? "—",
     status: normalizeStatus(r.status_display ?? r.status) as ContractStatus,
-    value: 0,
-    // Datas reais vivem em ExtractedData; o endpoint de listagem não as devolve.
-    // Usamos created_at só como placeholder visual — null em endDate para que
-    // a UI mostre "—" via formatDate.
-    startDate: r.created_at,
-    endDate: null as unknown as string,
+    value: r.value ?? 0,
+    startDate: r.start_date ?? r.created_at,
+    endDate: (r.end_date ?? null) as unknown as string,
     categoryId: "",
     owner: "—",
     tags: [],

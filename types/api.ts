@@ -73,6 +73,12 @@ export interface ContractListResult {
   /** Versão snake_case lowercase pronta para `getStatusVisual`. */
   status_display?: string;
   file_url: string;
+  /** Valor extraído pela IA (ExtractedData.value). Null se não extraído. */
+  value?: number | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  /** Nome da parte contratada (ou primeira party do contrato). */
+  counterparty?: string | null;
   created_at: string;
   updated_at: string;
 }

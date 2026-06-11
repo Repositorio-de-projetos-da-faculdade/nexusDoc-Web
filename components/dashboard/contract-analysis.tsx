@@ -293,7 +293,7 @@ export function AISummaryCard({
               Análise da IA
             </h3>
             <p className="text-[10px] text-[var(--muted-foreground)]">
-              Gerada automaticamente por NexusDoc AI
+              Gerada automaticamente por Gracon AI
             </p>
           </div>
         </div>

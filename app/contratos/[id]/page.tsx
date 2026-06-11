@@ -119,9 +119,12 @@ export default function ContratoDetailPage({
       });
     }
 
-    // Calcula risco base nos alertas e multas
-    const baseRisk = (json.alertas?.length || 0) * 15;
-    const riskScore = Math.min(100, baseRisk + (json.penalidades?.multaRescisao ? 10 : 0) || 30);
+    // Risco: base 15, +8 por alerta (saturando em +50), +10 por tipo de multa.
+    // Escala propositalmente côncava — 100% só em casos extremos, não no contrato típico.
+    const alertCount = Array.isArray(json.alertas) ? json.alertas.length : 0;
+    const penaltyCount =
+      (json.penalidades?.multaRescisao ? 1 : 0) + (json.penalidades?.multaInadimplemento ? 1 : 0);
+    const riskScore = Math.min(95, 15 + Math.min(50, alertCount * 8) + penaltyCount * 10);
 
     // Clause Breakdown for Pie Chart
     const breakdownMap: Record<string, number> = {};
